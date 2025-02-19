@@ -149,16 +149,3 @@ class AssetHeader(BaseModel):
     countryCode: Optional[str]
     duplicated: Optional[bool]
     invalid: Optional[bool]
-
-
-# Example usage
-if __name__ == "__main__":
-    client = DellWarrantyClient(client_id="your_client_id", client_secret="your_client_secret")
-    try:
-        headers = client.get_asset_header(["CARV030"])
-        validated_headers = [AssetHeader(**header) for header in headers]
-        print(validated_headers)
-    except ValidationError as e:
-        print("Validation Error:", e)
-    except httpx.HTTPError as e:
-        print("HTTP Error:", e)
