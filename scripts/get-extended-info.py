@@ -9,16 +9,23 @@ import logging
 from datetime import datetime
 from rich.table import Table
 
-load_dotenv()
-
 # Initialize console and logging
 console = Console()
 logging.basicConfig(level=logging.INFO, format='%(message)s', handlers=[RichHandler()])
 logger = logging.getLogger("rich")
 
-
-def fetch_and_display_info(service_tag):
-
+def get_warranty_info(service_tag: str) -> Table:
+    """
+    Fetch and format warranty information for a given service tag.
+    
+    Args:
+        service_tag (str): The Dell service tag to look up
+        
+    Returns:
+        rich.table.Table: A formatted table containing the warranty information
+    """
+    load_dotenv()
+    
     service_tag = service_tag.upper()
     logger.info(f"Fetching information for Service Tag: {service_tag}")
 
@@ -27,20 +34,11 @@ def fetch_and_display_info(service_tag):
 
     # Fetch asset header
     asset_header = client.get_asset_header([service_tag])
-    print(asset_header)
-
-    # asset_details = client.get_asset_details([service_tag])
-    # print(asset_details)
-
     asset_summary = client.get_asset_summary([service_tag])
-    print(asset_summary)
-
-    # asset_warranty = client.get_asset_warranty([service_tag])
-    # print(asset_warranty)
 
     if not asset_header:
         logger.warning(f"No information found for Service Tag: {service_tag}")
-        return
+        return None
 
     # Create a rich table to display the information
     table = Table(title="Warranty Information")
@@ -61,10 +59,14 @@ def fetch_and_display_info(service_tag):
     else:
         table.add_row("Warranty Start", "Unknown")
 
-    # Print the table
-    console.print(table)
+    return table
 
-# Main processing loop
-if __name__ == "__main__":
+def main():
+    """CLI entrypoint when script is run directly."""
     service_tag_input = input("Enter the Service Tag: ")
-    fetch_and_display_info(service_tag_input)
+    table = get_warranty_info(service_tag_input)
+    if table:
+        console.print(table)
+
+if __name__ == "__main__":
+    main()

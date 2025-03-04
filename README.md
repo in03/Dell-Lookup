@@ -1,6 +1,6 @@
 # Dell-Lookup
 
-A Python package for interacting with Dell's Warranty API to retrieve asset information and perform bulk lookups.
+A client and modular CLI app for Dell's Warranty API to retrieve asset info, perform bulk lookups and more.
 
 > [!Warning] 🚧 This code is WIP and proof-of-concept. Use with caution.
 
@@ -16,33 +16,69 @@ A Python package for interacting with Dell's Warranty API to retrieve asset info
 
 ## Installation
 
-Requires Python 3.12.8 or higher. Install dependencies using:
+Requires Python 3.12.8 or higher. Install dependencies using [uv](https://github.com/astral-sh/uv):
 
 ```shell
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Configuration
 
-1. Create a `.env` file in the root directory
-2. Add your Dell API credentials:
+The tool uses a TOML configuration file located in your system's application directory. To get started:
 
-```env
-CLIENT_ID=your_client_id
-CLIENT_SECRET=your_client_secret
+1. View the current configuration:
+```shell
+delly config show
 ```
 
+2. Edit the configuration file:
+```shell
+delly config edit
+```
+
+The configuration file should contain your Dell API credentials:
+
+```toml
+[dell]
+client_id = "your_client_id"
+client_secret = "your_client_secret"
+```
+
+Other available configuration commands:
+```shell
+delly config browse  # Open config directory in file browser
+delly config reset   # Reset to default values
+delly config backup  # Create a backup of current config
+```
 
 ## Usage
 
-### Quick Single Lookup
+If you want to use the built in commands, you can use them
 
-Use the `get-extended-info.py` script for quick individual Service Tag lookups:
-
+Install the tool with UV:
 ```shell
-python scripts/get-extended-info.py
+uv tool install --from git+https://github.com/in03/dell-lookup.git dell-lookup
 ```
 
+1. Quick service tag lookup:
+```shell
+delly info SERVICE_TAG
+```
+
+2. Process a single CSV file:
+```shell
+delly bulk path/to/file.csv
+```
+
+3. Process all CSV files in a directory:
+```shell
+delly bulk --dir path/to/directory
+```
+
+4. Process all CSV files in the current directory:
+```shell
+delly bulk
+```
 
 This will prompt for a Service Tag and display detailed warranty information in a formatted table.
 
@@ -61,10 +97,9 @@ python scripts/bulk-model-add.py
 #### CSV Format Requirements
 Input CSV must have the following columns:
 
-```
+```csv
 Service Tag,PKID,Express Service Code,Serial Number
 ```
-
 
 The script will:
 - Add "Model" and "Warranty Start" columns
@@ -98,6 +133,70 @@ Available methods:
 - Warranty dates are formatted for Snipe-IT compatibility
 - All API responses are cached to minimize API calls
 
-## Contributing
+## Usage
 
-This is a work in progress. Contributions and improvements are welcome!
+### Using the Client
+
+You can use the client in your own scripts.
+
+Add it to your Python environment:
+```shell
+# uv or pip or whatever you like
+pip install git+https://github.com/in03/dell-lookup
+```
+
+Then import the client:
+```python
+from dell_lookup.client import DellWarrantyClient
+```
+
+### Using the CLI
+
+You can access the [built-in scripts](/scripts/) through the CLI.
+
+Install the tool with UV:
+```shell
+uv tool install --from git+https://github.com/in03/dell-lookup.git dell-lookup
+```
+
+1. Quick service tag lookup:
+```shell
+delly info SERVICE_TAG
+```
+
+2. Process a single CSV file:
+```shell
+delly bulk path/to/file.csv
+```
+
+3. Process all CSV files in a directory:
+```shell
+delly bulk --dir path/to/directory
+```
+
+4. Process all CSV files in the current directory:
+```shell
+delly bulk
+```
+
+### Extending the CLI
+
+You can also fork this repo and add your own scripts:
+
+1. Create a new script in the `scripts` directory
+2. Make sure it has modular functions that can be imported
+3. Add a new command to `src/dell_lookup/cli.py` using the `@app.command()` decorator
+4. The CLI will automatically find and import your script functions
+
+Push your changes and install on end devices like so:
+
+```shell
+uv tool install --from git+https://github.com/myusername/myrepo.git dell-lookup
+```
+
+The tool will be added to path, where you can call it like this:
+
+```shell
+delly mycustomscript SERVICE_TAG
+```
+
